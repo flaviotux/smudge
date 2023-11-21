@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.1
-// source: todo.proto
+// source: proto/todo.proto
 
-package pb
+package proto
 
 import (
 	context "context"
@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Todo_NewTodo_FullMethodName = "/calculator.Todo/NewTodo"
-	Todo_GetTodo_FullMethodName = "/calculator.Todo/GetTodo"
+	Todo_NewTodo_FullMethodName = "/todo.Todo/NewTodo"
+	Todo_GetTodo_FullMethodName = "/todo.Todo/GetTodo"
 )
 
 // TodoClient is the client API for Todo service.
@@ -129,7 +129,7 @@ func _Todo_GetTodo_Handler(srv interface{}, ctx context.Context, dec func(interf
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Todo_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "calculator.Todo",
+	ServiceName: "todo.Todo",
 	HandlerType: (*TodoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -142,5 +142,5 @@ var Todo_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "todo.proto",
+	Metadata: "proto/todo.proto",
 }

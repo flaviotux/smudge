@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package calculator;
+package todo;
 
-option go_package = "./pb";
+option go_package = "./proto";
 
 service Todo {
   rpc NewTodo(TodoRequest) returns (TodoResponse);
