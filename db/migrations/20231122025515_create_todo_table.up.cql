@@ -3,4 +3,4 @@ CREATE TABLE IF NOT EXISTS todos (
   text TEXT,
   done BOOLEAN,
   user_id UUID,
-);
+) WITH compaction = { 'class' : 'LeveledCompactionStrategy' };
