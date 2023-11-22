@@ -10,50 +10,32 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2/qb"
-	"gitlab.luizalabs.com/luizalabs/smudge/db"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	internal "gitlab.luizalabs.com/luizalabs/smudge/internal/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*internal.Todo, error) {
-	t := internal.Todo{
-		ID:     gocql.UUIDFromTime(time.Now()).String(),
-		Text:   input.Text,
-		UserID: input.UserID,
-		Done:   true,
-	}
-
-	q := db.TodoTable.InsertQueryContext(ctx, *r.DB).BindStruct(t)
-	if err := q.ExecRelease(); err != nil {
-		return nil, err
-	}
-
-	return &t, nil
+	return internal.NewTodoModel(r.DB).
+		SetID(gocql.UUIDFromTime(time.Now()).String()).
+		SetText(input.Text).
+		SetDone(false).
+		SetUserID(input.UserID).
+		InsertQueryContext(ctx)
 }
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*internal.Todo, error) {
-	var todo []*internal.Todo
-
-	q := db.TodoTable.SelectQueryContext(ctx, *r.DB).BindMap(qb.M{})
-	if err := q.SelectRelease(&todo); err != nil {
-		return nil, err
-	}
-
-	return todo, nil
+	return internal.NewTodoModel(r.DB).SelectQueryContext(ctx, qb.M{})
 }
 
 // User is the resolver for the user field.
 func (r *todoResolver) User(ctx context.Context, obj *internal.Todo) (*internal.User, error) {
-	u := internal.User{ID: obj.UserID}
-
-	q := db.UserTable.GetQueryContext(ctx, *r.DB).BindStruct(u)
-	if err := q.Get(&u); err != nil {
+	if _, err := obj.WithUserContext(ctx); err != nil {
 		return nil, err
 	}
 
-	return &u, nil
+	return obj.User, nil
 }
 
 // Mutation returns MutationResolver implementation.
