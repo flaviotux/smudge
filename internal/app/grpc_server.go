@@ -2,12 +2,15 @@ package app
 
 import (
 	"context"
-	"crypto/rand"
-	"fmt"
 	"log"
-	"math/big"
 	"net"
+	"time"
 
+	"github.com/gocql/gocql"
+	"github.com/scylladb/gocqlx/v2"
+	"github.com/scylladb/gocqlx/v2/qb"
+	"gitlab.luizalabs.com/luizalabs/smudge/db"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/model"
 	"gitlab.luizalabs.com/luizalabs/smudge/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -15,12 +18,12 @@ import (
 
 const defaultGRPCAddr = ":8090"
 
-func MakeGRPCServerAndRun(listenAddr string) error {
+func MakeGRPCServerAndRun(listenAddr string, session *gocqlx.Session) error {
 	if listenAddr == "" {
 		listenAddr = defaultGRPCAddr
 	}
 
-	grpcTodoFetcher := NewGRPCTodoFetcherServer()
+	grpcTodoFetcher := NewGRPCTodoFetcherServer(session)
 
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
@@ -38,28 +41,72 @@ func MakeGRPCServerAndRun(listenAddr string) error {
 
 type GRPCTodoFetcherServer struct {
 	proto.UnimplementedTodoServer
-	todos []*proto.TodoResponse
+	DB *gocqlx.Session
 }
 
-func NewGRPCTodoFetcherServer() *GRPCTodoFetcherServer {
-	return &GRPCTodoFetcherServer{}
+func NewGRPCTodoFetcherServer(session *gocqlx.Session) *GRPCTodoFetcherServer {
+	return &GRPCTodoFetcherServer{DB: session}
 }
 
 func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoRequest) (*proto.TodoResponse, error) {
-	randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
-	todo := &proto.TodoResponse{
+	u := model.User{ID: in.UserID}
+	t := model.Todo{
+		ID:     gocql.UUIDFromTime(time.Now()).String(),
 		Text:   in.Text,
-		ID:     fmt.Sprintf("T%d", randNumber),
-		UserID: in.UserID,
+		UserID: u.ID,
 	}
 
-	s.todos = append(s.todos, todo)
+	tq := db.TodoTable.InsertQueryContext(ctx, *s.DB).BindStruct(t)
+	if err := tq.ExecRelease(); err != nil {
+		return nil, err
+	}
 
-	return todo, nil
+	uq := db.UserTable.GetQueryContext(ctx, *s.DB).BindStruct(u)
+	if err := uq.Get(&u); err != nil {
+		return nil, err
+	}
+
+	return &proto.TodoResponse{
+		ID:   t.ID,
+		Text: t.Text,
+		Done: t.Done,
+		User: &proto.User{
+			ID:   u.ID,
+			Name: u.Name,
+		},
+	}, nil
 }
 
 func (s *GRPCTodoFetcherServer) GetTodo(ctx context.Context, in *proto.TodoRequest) (*proto.TodosResponse, error) {
-	return &proto.TodosResponse{
-		Todos: s.todos,
-	}, nil
+	var (
+		ts    []model.Todo
+		todos = make([]*proto.TodoResponse, 0)
+	)
+
+	tq := db.TodoTable.SelectQueryContext(ctx, *s.DB).BindMap(qb.M{})
+	if err := tq.SelectRelease(&ts); err != nil {
+		return nil, err
+	}
+
+	for _, t := range ts {
+		u := model.User{ID: t.UserID}
+		uq := db.UserTable.GetQueryContext(ctx, *s.DB).BindStruct(u)
+		if err := uq.Get(&u); err != nil {
+			return nil, err
+		}
+
+		todo := &proto.TodoResponse{
+			ID:   t.ID,
+			Text: t.Text,
+			Done: t.Done,
+			User: &proto.User{
+				ID:   u.ID,
+				Name: u.Name,
+			},
+		}
+
+		todos = append(todos, todo)
+	}
+
+	return &proto.TodosResponse{Todos: todos}, nil
 }
