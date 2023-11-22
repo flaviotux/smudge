@@ -5,11 +5,12 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/scylladb/gocqlx/v2"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph"
 )
 
-func HandleGraphQL() http.HandlerFunc {
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+func HandleGraphQL(session *gocqlx.Session) http.HandlerFunc {
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: session}}))
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)

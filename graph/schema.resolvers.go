@@ -6,33 +6,53 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
-	"fmt"
-	"math/big"
+	"time"
 
+	"github.com/gocql/gocql"
+	"github.com/scylladb/gocqlx/v2/qb"
+	"gitlab.luizalabs.com/luizalabs/smudge/db"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+	internal "gitlab.luizalabs.com/luizalabs/smudge/internal/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
-	todo := &model.Todo{
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*internal.Todo, error) {
+	t := internal.Todo{
+		ID:     gocql.UUIDFromTime(time.Now()).String(),
 		Text:   input.Text,
-		ID:     fmt.Sprintf("T%d", randNumber),
 		UserID: input.UserID,
 	}
-	r.todos = append(r.todos, todo)
-	return todo, nil
+
+	q := db.TodoTable.InsertQueryContext(ctx, *r.DB).BindStruct(t)
+	if err := q.ExecRelease(); err != nil {
+		return nil, err
+	}
+
+	return &t, nil
 }
 
 // Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.todos, nil
+func (r *queryResolver) Todos(ctx context.Context) ([]*internal.Todo, error) {
+	var todo []*internal.Todo
+
+	q := db.TodoTable.SelectQueryContext(ctx, *r.DB).BindMap(qb.M{})
+	if err := q.SelectRelease(&todo); err != nil {
+		return nil, err
+	}
+
+	return todo, nil
 }
 
 // User is the resolver for the user field.
-func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
-	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID}, nil
+func (r *todoResolver) User(ctx context.Context, obj *internal.Todo) (*internal.User, error) {
+	u := internal.User{ID: obj.UserID}
+
+	q := db.UserTable.GetQueryContext(ctx, *r.DB).BindStruct(u)
+	if err := q.Get(&u); err != nil {
+		return nil, err
+	}
+
+	return &u, nil
 }
 
 // Mutation returns MutationResolver implementation.
