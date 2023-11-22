@@ -23,8 +23,7 @@ message TodoResponse {
   string ID = 1;
   string text = 2;
   bool done = 3;
-  string userID = 4;
-  User user = 5;
+  User user = 4;
 }
 
 message TodosResponse {
