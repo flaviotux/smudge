@@ -26,6 +26,8 @@ resolver:
   # Optional: turn on to not generate template comments above resolvers
   # omit_template_comment: false
 
+omit_getters: true
+
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
 # struct_tag: json
 
@@ -66,7 +68,7 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+  - "gitlab.luizalabs.com/luizalabs/smudge/internal/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -80,6 +82,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+      - github.com/99designs/gqlgen/graphql.UUID
   Int:
     model:
       - github.com/99designs/gqlgen/graphql.Int
