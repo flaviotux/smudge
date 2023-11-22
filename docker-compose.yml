@@ -27,6 +27,8 @@ services:
       - "4000:4000"
     links:
       - scylla
+    depends_on:
+      - scylla
 
   migrate:
     image: migrate/migrate
