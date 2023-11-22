@@ -21,6 +21,7 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoReque
 		ID:     gocql.UUIDFromTime(time.Now()).String(),
 		Text:   input.Text,
 		UserID: input.UserID,
+		Done:   true,
 	}
 
 	q := db.TodoTable.InsertQueryContext(ctx, *r.DB).BindStruct(t)

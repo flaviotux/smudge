@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 
 	"gitlab.luizalabs.com/luizalabs/smudge/db"
 	"gitlab.luizalabs.com/luizalabs/smudge/internal/app"
@@ -13,12 +14,12 @@ func main() {
 	var (
 		restAddr = flag.String("rest", os.Getenv("REST_LISTENADDR"), "listen address of the rest transport")
 		grpcAddr = flag.String("grpc", os.Getenv("GRPC_LISTENADDR"), "listen address of the grpc transport")
-		hosts    = []string{"localhost"}
-		keyspace = "smudge"
+		keyspace = flag.String("keyspaces", os.Getenv("SCYLLA_DB_KEYSPACE"), "scylladb keyspace")
+		hosts    = flag.String("hosts", os.Getenv("SCYLLA_DB_HOSTS"), "scylladb hosts")
 	)
 	flag.Parse()
 
-	manager := db.NewScyllaManager(hosts, keyspace)
+	manager := db.NewScyllaManager(strings.Split(*hosts, ","), *keyspace)
 
 	if err := manager.CreateKeyspace(); err != nil {
 		log.Fatal(err)

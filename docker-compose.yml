@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  scylla:
+    image: scylladb/scylla
+    container_name: scylla
+    expose: [9042]
+
+  smudge:
+    build: .
+    container_name: smudge
+    develop: &develop
+      watch:
+        - action: rebuild
+          path: .
+          target: /app
+          ignore:
+            - .git
+            - docker-compose.yml
+    environment:
+      REST_LISTENADDR: ":3000"
+      GRPC_LISTENADDR: ":4000"
+      SCYLLA_DB_HOSTS: "scylla"
+      SCYLLA_DB_KEYSPACE: "smudge"
+    ports:
+      - "8080:3000"
+      - "4000:4000"
+    links:
+      - scylla
+
+  migrate:
+    image: migrate/migrate
+    container_name: migrate
+    volumes:
+      - ./db/migrations:/migrations
+    command: ["-path", "/migrations", "-database",  "cassandra://scylla/smudge", "up", "3"]
+    depends_on:
+      - scylla
+      - smudge
+    links:
+      - scylla
