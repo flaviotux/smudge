@@ -2,7 +2,9 @@ package model
 
 import (
 	"context"
+	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/table"
 	"gitlab.luizalabs.com/luizalabs/smudge/db"
@@ -20,8 +22,8 @@ func NewUserModel(session *gocqlx.Session) *User {
 	return &User{session: session, table: *db.UserTable}
 }
 
-func (m *User) SetID(id string) *User {
-	m.ID = id
+func (m *User) generateUUIFromTime() *User {
+	m.ID = gocql.UUIDFromTime(time.Now()).String()
 	return m
 }
 
@@ -31,15 +33,22 @@ func (m *User) SetName(name string) *User {
 }
 
 func (m *User) GetQueryContext(ctx context.Context, columns ...string) (*User, error) {
-	uq := m.table.GetQueryContext(ctx, *m.session, columns...).BindStruct(m)
-	if err := uq.Get(&m); err != nil {
+	user := User{
+		ID:   m.ID,
+		Name: m.Name,
+	}
+
+	uq := m.table.GetQueryContext(ctx, *m.session, columns...).BindStruct(user)
+	if err := uq.Get(&user); err != nil {
 		return nil, err
 	}
 
-	return m, nil
+	return &user, nil
 }
 
 func (m *User) InsertQueryContext(ctx context.Context) (*User, error) {
+	m.generateUUIFromTime()
+
 	q := m.table.InsertQueryContext(ctx, *m.session).BindStruct(m)
 	if err := q.ExecRelease(); err != nil {
 		return nil, err

@@ -2,7 +2,9 @@ package model
 
 import (
 	"context"
+	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/table"
 	"gitlab.luizalabs.com/luizalabs/smudge/db"
@@ -23,8 +25,8 @@ func NewTodoModel(session *gocqlx.Session) *Todo {
 	return &Todo{session: session, table: *db.TodoTable}
 }
 
-func (m *Todo) SetID(id string) *Todo {
-	m.ID = id
+func (m *Todo) generateUUIFromTime() *Todo {
+	m.ID = gocql.UUIDFromTime(time.Now()).String()
 	return m
 }
 
@@ -38,26 +40,30 @@ func (m *Todo) SetDone(done bool) *Todo {
 	return m
 }
 
-func (m *Todo) SetUserID(userID string) *Todo {
-	m.UserID = userID
-	return m
-}
-
-func (m *Todo) SetUser(user *User) *Todo {
-	m.User = user
+func (m *Todo) AddUser(user *User) *Todo {
+	m.UserID = user.ID
 	return m
 }
 
 func (m *Todo) GetQueryContext(ctx context.Context, columns ...string) (*Todo, error) {
-	uq := m.table.GetQueryContext(ctx, *m.session, columns...).BindStruct(m)
-	if err := uq.Get(&m); err != nil {
+	todo := Todo{
+		ID:     m.ID,
+		Text:   m.Text,
+		Done:   m.Done,
+		UserID: m.UserID,
+	}
+
+	uq := m.table.GetQueryContext(ctx, *m.session, columns...).BindStruct(todo)
+	if err := uq.Get(&todo); err != nil {
 		return nil, err
 	}
 
-	return m, nil
+	return &todo, nil
 }
 
 func (m *Todo) InsertQueryContext(ctx context.Context) (*Todo, error) {
+	m.generateUUIFromTime()
+
 	q := m.table.InsertQueryContext(ctx, *m.session).BindStruct(m)
 	if err := q.ExecRelease(); err != nil {
 		return nil, err
@@ -75,16 +81,4 @@ func (m *Todo) SelectQueryContext(ctx context.Context, arg map[string]interface{
 	}
 
 	return todo, nil
-}
-
-func (m *Todo) WithUserContext(ctx context.Context, columns ...string) (*Todo, error) {
-	u := NewUserModel(m.session).SetID(m.UserID)
-
-	if _, err := u.GetQueryContext(ctx, columns...); err != nil {
-		return nil, err
-	}
-
-	m.SetUser(u)
-
-	return m, nil
 }

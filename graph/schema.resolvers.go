@@ -6,9 +6,7 @@ package graph
 
 import (
 	"context"
-	"time"
 
-	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	internal "gitlab.luizalabs.com/luizalabs/smudge/internal/model"
@@ -16,26 +14,25 @@ import (
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*internal.Todo, error) {
-	return internal.NewTodoModel(r.DB).
-		SetID(gocql.UUIDFromTime(time.Now()).String()).
+	user := internal.User{ID: input.UserID}
+
+	return internal.NewTodoModel(r.session).
 		SetText(input.Text).
 		SetDone(false).
-		SetUserID(input.UserID).
+		AddUser(&user).
 		InsertQueryContext(ctx)
 }
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*internal.Todo, error) {
-	return internal.NewTodoModel(r.DB).SelectQueryContext(ctx, qb.M{})
+	return internal.NewTodoModel(r.session).SelectQueryContext(ctx, qb.M{})
 }
 
 // User is the resolver for the user field.
 func (r *todoResolver) User(ctx context.Context, obj *internal.Todo) (*internal.User, error) {
-	if _, err := obj.WithUserContext(ctx); err != nil {
-		return nil, err
-	}
-
-	return obj.User, nil
+	user := internal.NewUserModel(r.session)
+	user.ID = obj.UserID
+	return user.GetQueryContext(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

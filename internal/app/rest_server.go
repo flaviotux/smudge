@@ -14,7 +14,7 @@ const defaultRestAddr = ":8080"
 
 type RESTAPIServer struct {
 	ListenAddr string
-	DB         *gocqlx.Session
+	session    *gocqlx.Session
 }
 
 func (s *RESTAPIServer) Run() error {
@@ -26,7 +26,7 @@ func (s *RESTAPIServer) Run() error {
 	r.Use(middleware.Logger)
 
 	r.Route("/graphql", func(r chi.Router) {
-		r.Post("/", handlers.HandleGraphQL(s.DB))
+		r.Post("/", handlers.HandleGraphQL(s.session))
 		r.Get("/", handlers.HandleGraphQLPlayground())
 	})
 

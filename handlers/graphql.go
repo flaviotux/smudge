@@ -10,7 +10,7 @@ import (
 )
 
 func HandleGraphQL(session *gocqlx.Session) http.HandlerFunc {
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: session}}))
+	h := handler.NewDefaultServer(graph.NewSchema(session))
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)

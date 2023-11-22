@@ -4,9 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
-	"time"
 
-	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"gitlab.luizalabs.com/luizalabs/smudge/internal/model"
@@ -40,28 +38,32 @@ func MakeGRPCServerAndRun(listenAddr string, session *gocqlx.Session) error {
 
 type GRPCTodoFetcherServer struct {
 	proto.UnimplementedTodoServer
-	DB *gocqlx.Session
+	session *gocqlx.Session
 }
 
 func NewGRPCTodoFetcherServer(session *gocqlx.Session) *GRPCTodoFetcherServer {
-	return &GRPCTodoFetcherServer{DB: session}
+	return &GRPCTodoFetcherServer{session: session}
 }
 
 func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoRequest) (*proto.TodoResponse, error) {
-	t, err := model.NewTodoModel(s.DB).
-		SetID(gocql.UUIDFromTime(time.Now()).String()).
+	user := model.User{ID: in.UserID}
+
+	t, err := model.NewTodoModel(s.session).
 		SetText(in.Text).
 		SetDone(false).
-		SetUserID(in.UserID).
-		GetQueryContext(ctx)
+		AddUser(&user).
+		InsertQueryContext(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err := t.WithUserContext(ctx); err != nil {
+	u := model.NewUserModel(s.session)
+	if _, err := u.GetQueryContext(ctx); err != nil {
 		return nil, err
 	}
+
+	t.AddUser(u)
 
 	return &proto.TodoResponse{
 		ID:   t.ID,
@@ -76,7 +78,7 @@ func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoReque
 
 func (s *GRPCTodoFetcherServer) GetTodo(ctx context.Context, in *proto.TodoRequest) (*proto.TodosResponse, error) {
 	var (
-		ts    = model.NewTodoModel(s.DB)
+		ts    = model.NewTodoModel(s.session)
 		todos = make([]*proto.TodoResponse, 0)
 	)
 
@@ -86,8 +88,10 @@ func (s *GRPCTodoFetcherServer) GetTodo(ctx context.Context, in *proto.TodoReque
 	}
 
 	for _, t := range t {
-		_, err := t.WithUserContext(ctx)
-		if err != nil {
+		user := model.NewUserModel(s.session)
+		user.ID = t.UserID
+
+		if _, err := user.GetQueryContext(ctx); err != nil {
 			return nil, err
 		}
 
