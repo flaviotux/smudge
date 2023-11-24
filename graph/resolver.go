@@ -4,7 +4,7 @@ package graph
 
 import (
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/scylladb/gocqlx/v2"
+	"gitlab.luizalabs.com/luizalabs/smudge/db"
 )
 
 // This file will not be regenerated automatically.
@@ -12,10 +12,10 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	session *gocqlx.Session
+	session *db.Session
 }
 
-func NewSchema(session *gocqlx.Session) graphql.ExecutableSchema {
+func NewSchema(session *db.Session) graphql.ExecutableSchema {
 	return NewExecutableSchema(Config{
 		Resolvers: &Resolver{session},
 	})

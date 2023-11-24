@@ -20,18 +20,20 @@ func main() {
 	flag.Parse()
 
 	manager := db.NewScyllaManager(strings.Split(*hosts, ","), *keyspace)
-
 	if err := manager.CreateKeyspace(); err != nil {
 		log.Fatal(err)
 	}
 
-	session, err := manager.Connect()
+	scylla, err := manager.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer scylla.Close()
 
-	go app.MakeGRPCServerAndRun(*grpcAddr, &session)
+	session := db.NewSession(scylla)
 
-	restServer := app.NewRESTAPIServer(*restAddr, &session)
+	go app.MakeGRPCServerAndRun(*grpcAddr, session)
+
+	restServer := app.NewRESTAPIServer(*restAddr, session)
 	restServer.Run()
 }

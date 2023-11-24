@@ -7,7 +7,6 @@ package graph
 import (
 	"context"
 
-	"github.com/scylladb/gocqlx/v2/qb"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	internal "gitlab.luizalabs.com/luizalabs/smudge/internal/model"
 )
@@ -16,23 +15,26 @@ import (
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*internal.Todo, error) {
 	user := internal.User{ID: input.UserID}
 
-	return internal.NewTodoModel(r.session).
+	if _, err := r.session.User.Get(ctx, input.UserID); err != nil {
+		return nil, err
+	}
+
+	return r.session.Todo.
+		Create().
 		SetText(input.Text).
 		SetDone(false).
 		AddUser(&user).
-		InsertQueryContext(ctx)
+		Save(ctx)
 }
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*internal.Todo, error) {
-	return internal.NewTodoModel(r.session).SelectQueryContext(ctx, qb.M{})
+	return r.session.Todo.Query().All(ctx)
 }
 
 // User is the resolver for the user field.
 func (r *todoResolver) User(ctx context.Context, obj *internal.Todo) (*internal.User, error) {
-	user := internal.NewUserModel(r.session)
-	user.ID = obj.UserID
-	return user.GetQueryContext(ctx)
+	return r.session.User.Get(ctx, obj.UserID)
 }
 
 // Mutation returns MutationResolver implementation.

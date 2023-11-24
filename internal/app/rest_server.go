@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/scylladb/gocqlx/v2"
+	"gitlab.luizalabs.com/luizalabs/smudge/db"
 	"gitlab.luizalabs.com/luizalabs/smudge/handlers"
 )
 
@@ -14,7 +14,7 @@ const defaultRestAddr = ":8080"
 
 type RESTAPIServer struct {
 	ListenAddr string
-	session    *gocqlx.Session
+	session    *db.Session
 }
 
 func (s *RESTAPIServer) Run() error {
@@ -34,6 +34,6 @@ func (s *RESTAPIServer) Run() error {
 	return http.ListenAndServe(s.ListenAddr, r)
 }
 
-func NewRESTAPIServer(listenAddr string, session *gocqlx.Session) *RESTAPIServer {
+func NewRESTAPIServer(listenAddr string, session *db.Session) *RESTAPIServer {
 	return &RESTAPIServer{listenAddr, session}
 }
