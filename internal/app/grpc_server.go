@@ -5,16 +5,16 @@ import (
 	"log"
 	"net"
 
-	"gitlab.luizalabs.com/luizalabs/smudge/db"
-	"gitlab.luizalabs.com/luizalabs/smudge/internal/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	"gitlab.luizalabs.com/luizalabs/smudge/proto"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 const defaultGRPCAddr = ":8090"
 
-func MakeGRPCServerAndRun(listenAddr string, session *db.Session) error {
+func MakeGRPCServerAndRun(listenAddr string, session *scylla.Session) error {
 	if listenAddr == "" {
 		listenAddr = defaultGRPCAddr
 	}
@@ -37,10 +37,10 @@ func MakeGRPCServerAndRun(listenAddr string, session *db.Session) error {
 
 type GRPCTodoFetcherServer struct {
 	proto.UnimplementedTodoServer
-	session *db.Session
+	session *scylla.Session
 }
 
-func NewGRPCTodoFetcherServer(session *db.Session) *GRPCTodoFetcherServer {
+func NewGRPCTodoFetcherServer(session *scylla.Session) *GRPCTodoFetcherServer {
 	return &GRPCTodoFetcherServer{session: session}
 }
 

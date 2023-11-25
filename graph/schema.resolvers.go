@@ -8,12 +8,11 @@ import (
 	"context"
 
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
-	internal "gitlab.luizalabs.com/luizalabs/smudge/internal/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*internal.Todo, error) {
-	user := internal.User{ID: input.UserID}
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*model.Todo, error) {
+	user := model.User{ID: input.UserID}
 
 	if _, err := r.session.User.Get(ctx, input.UserID); err != nil {
 		return nil, err
@@ -28,12 +27,17 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoReque
 }
 
 // Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*internal.Todo, error) {
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 	return r.session.Todo.Query().All(ctx)
 }
 
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	return r.session.User.Query().All(ctx)
+}
+
 // User is the resolver for the user field.
-func (r *todoResolver) User(ctx context.Context, obj *internal.Todo) (*internal.User, error) {
+func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
 	return r.session.User.Get(ctx, obj.UserID)
 }
 

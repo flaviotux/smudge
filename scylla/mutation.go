@@ -1,4 +1,4 @@
-package db
+package scylla
 
 type TodoMutation struct {
 	id      *string

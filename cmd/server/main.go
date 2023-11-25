@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.luizalabs.com/luizalabs/smudge/db"
 	"gitlab.luizalabs.com/luizalabs/smudge/internal/app"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 )
 
 func main() {
@@ -19,18 +19,18 @@ func main() {
 	)
 	flag.Parse()
 
-	manager := db.NewScyllaManager(strings.Split(*hosts, ","), *keyspace)
+	manager := scylla.NewScyllaManager(strings.Split(*hosts, ","), *keyspace)
 	if err := manager.CreateKeyspace(); err != nil {
 		log.Fatal(err)
 	}
 
-	scylla, err := manager.Connect()
+	scyllaSession, err := manager.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer scylla.Close()
+	defer scyllaSession.Close()
 
-	session := db.NewSession(scylla)
+	session := scylla.NewSession(scyllaSession)
 
 	go app.MakeGRPCServerAndRun(*grpcAddr, session)
 

@@ -1,4 +1,4 @@
-package db
+package scylla
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/table"
-	"gitlab.luizalabs.com/luizalabs/smudge/internal/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 )
 
 type UserCreate struct {

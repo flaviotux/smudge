@@ -1,4 +1,4 @@
-package db
+package scylla
 
 import "github.com/scylladb/gocqlx/v2/table"
 

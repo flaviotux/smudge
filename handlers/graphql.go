@@ -5,11 +5,11 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"gitlab.luizalabs.com/luizalabs/smudge/db"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 )
 
-func HandleGraphQL(session *db.Session) http.HandlerFunc {
+func HandleGraphQL(session *scylla.Session) http.HandlerFunc {
 	h := handler.NewDefaultServer(graph.NewSchema(session))
 
 	return func(w http.ResponseWriter, r *http.Request) {
