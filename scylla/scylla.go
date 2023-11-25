@@ -18,6 +18,13 @@ type (
 		Name string // Field or edge name.
 		err  error
 	}
+
+	// NotFoundError returns when trying to update an
+	// entity, and it was not found in the database.
+	NotFoundError struct {
+		table string
+		id    string
+	}
 )
 
 func NewScyllaManager(hosts []string, keyspace string) *ScyllaManager {
@@ -60,4 +67,8 @@ func IsValidationError(err error) bool {
 	}
 	var e *ValidationError
 	return errors.As(err, &e)
+}
+
+func (e *NotFoundError) Error() string {
+	return fmt.Sprintf("record with id %v not found in table %s", e.id, e.table)
 }

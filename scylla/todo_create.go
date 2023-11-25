@@ -7,43 +7,55 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
-	"github.com/scylladb/gocqlx/v2/table"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
 )
 
 type TodoCreate struct {
-	table.Table
-
 	mutation *TodoMutation
 	session  *gocqlx.Session
 }
 
+// SetText sets the "text" field.
 func (tc *TodoCreate) SetText(s string) *TodoCreate {
 	tc.mutation.SetText(s)
 	return tc
 }
 
+// SetDone sets the "done" field.
 func (tc *TodoCreate) SetDone(b bool) *TodoCreate {
 	tc.mutation.SetDone(b)
 	return tc
 }
 
+// SetUserId sets the "user_id" field.
 func (tc *TodoCreate) SetUserId(s string) *TodoCreate {
 	tc.mutation.SetUserId(s)
 	return tc
 }
 
+// AddUser adds the "user" children to the Todo entity.
 func (tc *TodoCreate) AddUser(u *model.User) *TodoCreate {
 	return tc.SetUserId(u.ID)
 }
 
-func (tc *TodoCreate) defaults() {
-	tc.mutation.SetDone(false)
+// Mutation returns the TodoMutation object of the builder.
+func (tc *TodoCreate) Mutation() *TodoMutation {
+	return tc.mutation
 }
 
+// Save creates the Todo in the database.
 func (tc *TodoCreate) Save(ctx context.Context) (*model.Todo, error) {
 	tc.defaults()
 	return tc.cqlSave(ctx)
+}
+
+// defaults sets the default values of the builder before save.
+func (tc *TodoCreate) defaults() {
+	if _, ok := tc.mutation.Done(); !ok {
+		v := todo.DefaultDone
+		tc.mutation.SetDone(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -65,7 +77,7 @@ func (tc *TodoCreate) cqlSave(ctx context.Context) (*model.Todo, error) {
 		return nil, err
 	}
 	_node := tc.createSpec()
-	q := tc.InsertQueryContext(ctx, *tc.session).BindStruct(_node)
+	q := todoTable.InsertQueryContext(ctx, *tc.session).BindStruct(_node)
 	if err := q.ExecRelease(); err != nil {
 		return nil, err
 	}

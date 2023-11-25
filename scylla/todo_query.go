@@ -5,13 +5,10 @@ import (
 
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
-	"github.com/scylladb/gocqlx/v2/table"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 )
 
 type TodoQuery struct {
-	table.Table
-
 	session *gocqlx.Session
 	where   []qb.Cmp
 	limit   uint
@@ -27,9 +24,22 @@ func (tq *TodoQuery) Limit(i uint) *TodoQuery {
 	return tq
 }
 
+func (tq *TodoQuery) Only(ctx context.Context) (*model.Todo, error) {
+	var todo model.Todo
+	sb := todoTable.SelectBuilder()
+	if tq.where != nil {
+		sb.Where(tq.where...)
+	}
+	u := sb.QueryContext(ctx, *tq.session).BindStruct(todo)
+	if err := u.GetRelease(&todo); err != nil {
+		return nil, err
+	}
+	return &todo, nil
+}
+
 func (tq *TodoQuery) All(ctx context.Context) ([]*model.Todo, error) {
 	var todo []*model.Todo
-	sb := tq.SelectBuilder()
+	sb := todoTable.SelectBuilder()
 	if tq.where != nil {
 		sb.Where(tq.where...)
 	}

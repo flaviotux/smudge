@@ -11,7 +11,7 @@ import (
 )
 
 // CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoRequest) (*model.Todo, error) {
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoInput) (*model.Todo, error) {
 	user := model.User{ID: input.UserID}
 
 	if _, err := r.session.User.Get(ctx, input.UserID); err != nil {
@@ -23,6 +23,14 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.TodoReque
 		SetText(input.Text).
 		SetDone(false).
 		AddUser(&user).
+		Save(ctx)
+}
+
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput) (*model.User, error) {
+	return r.session.User.
+		Create().
+		SetName(input.Name).
 		Save(ctx)
 }
 

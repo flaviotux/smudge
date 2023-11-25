@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/scylladb/gocqlx/v2"
-	"github.com/scylladb/gocqlx/v2/qb"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
 )
 
 type Session struct {
 	gocqlx.Session
+
 	Todo *TodoSession
 	User *UserSession
 }
@@ -41,7 +42,6 @@ func (s *TodoSession) Create() *TodoCreate {
 	return &TodoCreate{
 		mutation: mutation,
 		session:  s.session,
-		Table:    *TodoTable,
 	}
 }
 
@@ -49,7 +49,6 @@ func (s *TodoSession) Create() *TodoCreate {
 func (s *TodoSession) Query() *TodoQuery {
 	return &TodoQuery{
 		session: s.session,
-		Table:   *TodoTable,
 	}
 }
 
@@ -68,7 +67,6 @@ func (s *UserSession) Create() *UserCreate {
 	return &UserCreate{
 		mutation: mutation,
 		session:  s.session,
-		Table:    *UserTable,
 	}
 }
 
@@ -76,11 +74,10 @@ func (s *UserSession) Create() *UserCreate {
 func (s *UserSession) Query() *UserQuery {
 	return &UserQuery{
 		session: s.session,
-		Table:   *UserTable,
 	}
 }
 
-// Get returns a Car entity by its id.
+// Get returns a User entity by its id.
 func (s *UserSession) Get(ctx context.Context, id string) (*model.User, error) {
-	return s.Query().Where(qb.EqLit("id", id)).Only(ctx)
+	return s.Query().Where(user.ID(id)).Only(ctx)
 }

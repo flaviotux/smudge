@@ -1,10 +1,13 @@
 package scylla
 
+import "github.com/scylladb/gocqlx/v2/qb"
+
 type TodoMutation struct {
-	id      *string
-	text    *string
-	done    *bool
-	user_id *string
+	id          *string
+	text        *string
+	done        *bool
+	user_id     *string
+	comparators []qb.Cmp
 }
 
 // newTodoMutation creates new mutation for the Todo entity.
@@ -63,9 +66,14 @@ func (m *TodoMutation) UserID() (r string, exists bool) {
 	return *v, true
 }
 
+func (m *TodoMutation) Where(w ...qb.Cmp) {
+	m.comparators = append(m.comparators, w...)
+}
+
 type UserMutation struct {
-	id   *string
-	name *string
+	id          *string
+	name        *string
+	comparators []qb.Cmp
 }
 
 // newUserMutation creates new mutation for the Todo entity.
@@ -94,4 +102,8 @@ func (m *UserMutation) Name() (r string, exists bool) {
 		return
 	}
 	return *v, true
+}
+
+func (m *UserMutation) Where(w ...qb.Cmp) {
+	m.comparators = append(m.comparators, w...)
 }

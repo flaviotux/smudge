@@ -2,7 +2,11 @@
 
 package model
 
-type TodoRequest struct {
+type TodoInput struct {
 	Text   string `json:"text"`
 	UserID string `json:"userId"`
+}
+
+type UserInput struct {
+	Name string `json:"name"`
 }

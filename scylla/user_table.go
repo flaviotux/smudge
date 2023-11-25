@@ -1,14 +1,15 @@
 package scylla
 
-import "github.com/scylladb/gocqlx/v2/table"
+import (
+	"github.com/scylladb/gocqlx/v2/table"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
+)
 
 var userMetadata = table.Metadata{
-	Name: "users",
-	Columns: []string{
-		"id", "name",
-	},
-	PartKey: []string{},
-	SortKey: []string{"id"},
+	Name:    user.Table,
+	Columns: user.Columns,
+	PartKey: user.PartKey,
+	SortKey: user.SortKey,
 }
 
-var UserTable = table.New(userMetadata)
+var userTable = table.New(userMetadata)

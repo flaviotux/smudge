@@ -1,14 +1,15 @@
 package scylla
 
-import "github.com/scylladb/gocqlx/v2/table"
+import (
+	"github.com/scylladb/gocqlx/v2/table"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
+)
 
 var todoMetadata = table.Metadata{
-	Name: "todos",
-	Columns: []string{
-		"id", "text", "done", "user_id",
-	},
-	PartKey: []string{},
-	SortKey: []string{"id"},
+	Name:    todo.Table,
+	Columns: todo.Columns,
+	PartKey: todo.PartKey,
+	SortKey: todo.SortKey,
 }
 
-var TodoTable = table.New(todoMetadata)
+var todoTable = table.New(todoMetadata)

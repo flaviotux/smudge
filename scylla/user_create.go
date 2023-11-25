@@ -7,13 +7,10 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
-	"github.com/scylladb/gocqlx/v2/table"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 )
 
 type UserCreate struct {
-	table.Table
-
 	mutation *UserMutation
 	session  *gocqlx.Session
 }
@@ -40,7 +37,7 @@ func (uc *UserCreate) cqlSave(ctx context.Context) (*model.User, error) {
 		return nil, err
 	}
 	_node := uc.createSpec()
-	q := uc.InsertQueryContext(ctx, *uc.session).BindStruct(_node)
+	q := userTable.InsertQueryContext(ctx, *uc.session).BindStruct(_node)
 	if err := q.ExecRelease(); err != nil {
 		return nil, err
 	}

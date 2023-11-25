@@ -5,13 +5,10 @@ import (
 
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
-	"github.com/scylladb/gocqlx/v2/table"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 )
 
 type UserQuery struct {
-	table.Table
-
 	session *gocqlx.Session
 	where   []qb.Cmp
 	limit   uint
@@ -29,12 +26,9 @@ func (uq *UserQuery) Limit(limit uint) *UserQuery {
 
 func (uq *UserQuery) Only(ctx context.Context) (*model.User, error) {
 	var user model.User
-	sb := uq.SelectBuilder()
+	sb := userTable.SelectBuilder()
 	if uq.where != nil {
 		sb.Where(uq.where...)
-	}
-	if uq.limit != 0 {
-		sb.Limit(uq.limit)
 	}
 	u := sb.QueryContext(ctx, *uq.session).BindStruct(user)
 	if err := u.GetRelease(&user); err != nil {
@@ -45,7 +39,7 @@ func (uq *UserQuery) Only(ctx context.Context) (*model.User, error) {
 
 func (uq *UserQuery) All(ctx context.Context) ([]*model.User, error) {
 	var user []*model.User
-	sb := uq.SelectBuilder()
+	sb := userTable.SelectBuilder()
 	if uq.where != nil {
 		sb.Where(uq.where...)
 	}
