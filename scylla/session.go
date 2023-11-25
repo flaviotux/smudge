@@ -5,6 +5,7 @@ import (
 
 	"github.com/scylladb/gocqlx/v2"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
 )
 
@@ -68,6 +69,24 @@ func (s *UserSession) Create() *UserCreate {
 		mutation: mutation,
 		session:  s.session,
 	}
+}
+
+// Delete returns a delete builder for Todo.
+func (s *TodoSession) Delete() *TodoDelete {
+	mutation := newTodoMutation()
+	return &TodoDelete{mutation: mutation, session: s.session}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (s *TodoSession) DeleteOne(todo *model.Todo) *TodoDeleteOne {
+	return s.DeleteOneID(todo.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (s *TodoSession) DeleteOneID(id string) *TodoDeleteOne {
+	builder := s.Delete().Where(todo.ID(id))
+	builder.mutation.id = &id
+	return &TodoDeleteOne{builder}
 }
 
 // Query returns a query builder for User.
