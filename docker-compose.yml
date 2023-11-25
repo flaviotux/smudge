@@ -34,8 +34,8 @@ services:
     image: migrate/migrate
     container_name: migrate
     volumes:
-      - ./db/migrations:/migrations
-    command: ["-path", "/migrations", "-database",  "cassandra://scylla/smudge", "up", "3"]
+      - ./scylla/migrations:/migrations
+    command: ["-path", "/migrations", "-database",  "cassandra://scylla/smudge", "up"]
     depends_on:
       - scylla
       - smudge
