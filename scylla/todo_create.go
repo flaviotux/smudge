@@ -7,13 +7,19 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
+	"github.com/scylladb/gocqlx/v2/qb"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
 )
 
 type TodoCreate struct {
+	ib       *qb.InsertBuilder
 	mutation *TodoMutation
 	session  *gocqlx.Session
+}
+
+func newTodoInsertBuilder() *qb.InsertBuilder {
+	return qb.Insert(todo.Table).Columns(todo.Columns...)
 }
 
 // SetText sets the "text" field.
@@ -77,7 +83,7 @@ func (tc *TodoCreate) cqlSave(ctx context.Context) (*model.Todo, error) {
 		return nil, err
 	}
 	_node := tc.createSpec()
-	q := todoTable.InsertQueryContext(ctx, *tc.session).BindStruct(_node)
+	q := tc.ib.QueryContext(ctx, *tc.session).BindStruct(_node)
 	if err := q.ExecRelease(); err != nil {
 		return nil, err
 	}

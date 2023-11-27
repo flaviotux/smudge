@@ -6,31 +6,41 @@ import (
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
 )
 
 type UserQuery struct {
+	sb      *qb.SelectBuilder
 	session *gocqlx.Session
-	where   []qb.Cmp
-	limit   uint
+}
+
+func newUserSelectBuilder() *qb.SelectBuilder {
+	return qb.Select(user.Table)
+}
+
+func (uq *UserQuery) Columns(columns ...string) *UserQuery {
+	uq.sb.Columns(columns...)
+	return uq
 }
 
 func (uq *UserQuery) Where(w ...qb.Cmp) *UserQuery {
-	uq.where = append(uq.where, w...)
+	uq.sb.Where(w...)
 	return uq
 }
 
 func (uq *UserQuery) Limit(limit uint) *UserQuery {
-	uq.limit = limit
+	uq.sb.Limit(limit)
+	return uq
+}
+
+func (uq *UserQuery) OrderBy(column string, o qb.Order) *UserQuery {
+	uq.sb.OrderBy(column, o)
 	return uq
 }
 
 func (uq *UserQuery) Only(ctx context.Context) (*model.User, error) {
 	var user model.User
-	sb := userTable.SelectBuilder()
-	if uq.where != nil {
-		sb.Where(uq.where...)
-	}
-	u := sb.QueryContext(ctx, *uq.session).BindStruct(user)
+	u := uq.sb.QueryContext(ctx, *uq.session).BindStruct(user)
 	if err := u.GetRelease(&user); err != nil {
 		return nil, err
 	}
@@ -38,17 +48,10 @@ func (uq *UserQuery) Only(ctx context.Context) (*model.User, error) {
 }
 
 func (uq *UserQuery) All(ctx context.Context) ([]*model.User, error) {
-	var user []*model.User
-	sb := userTable.SelectBuilder()
-	if uq.where != nil {
-		sb.Where(uq.where...)
-	}
-	if uq.limit != 0 {
-		sb.Limit(uq.limit)
-	}
-	q := sb.QueryContext(ctx, *uq.session)
-	if err := q.SelectRelease(&user); err != nil {
+	var users []*model.User
+	q := uq.sb.QueryContext(ctx, *uq.session)
+	if err := q.SelectRelease(&users); err != nil {
 		return nil, err
 	}
-	return user, nil
+	return users, nil
 }

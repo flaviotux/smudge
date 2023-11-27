@@ -9,31 +9,32 @@ import (
 )
 
 type TodoDelete struct {
+	db       *qb.DeleteBuilder
 	mutation *TodoMutation
 	session  *gocqlx.Session
 }
 
-// Where appends a list predicates to the CarDelete builder.
+func newTodoDeleteBuilder() *qb.DeleteBuilder {
+	return qb.Delete(todo.Table)
+}
+
+// Where appends a list comparators to the TodoDelete builder.
 func (td *TodoDelete) Where(ps ...qb.Cmp) *TodoDelete {
-	td.mutation.Where(ps...)
+	td.db.Where(ps...)
 	return td
 }
 
 // Exec executes the deletion query and returns how many todos were deleted.
 func (td *TodoDelete) Exec(ctx context.Context) (int, error) {
-	return td.sqlExec(ctx)
+	return td.cqlExec(ctx)
 }
 
-func (td *TodoDelete) sqlExec(ctx context.Context) (int, error) {
-	var counter int
-	sb := todoTable.SelectBuilder().Where(td.mutation.comparators...).CountAll()
-	qs := sb.QueryContext(ctx, *td.session)
-	if err := qs.SelectRelease(&counter); err != nil {
-		return 0, err
-	}
-	db := todoTable.DeleteBuilder().Existing().Where(td.mutation.comparators...)
-	qd := db.QueryContext(ctx, *td.session)
-	if err := qd.ExecRelease(); err != nil {
+func (td *TodoDelete) cqlExec(ctx context.Context) (int, error) {
+	var (
+		q       = td.db.QueryContext(ctx, *td.session)
+		counter = q.Iter().NumRows()
+	)
+	if err := q.ExecRelease(); err != nil {
 		return 0, err
 	}
 	return counter, nil
@@ -46,7 +47,7 @@ type TodoDeleteOne struct {
 
 // Where appends a list predicates to the CarDelete builder.
 func (tdo *TodoDeleteOne) Where(ps ...qb.Cmp) *TodoDeleteOne {
-	tdo.td.mutation.Where(ps...)
+	tdo.td.Where(ps...)
 	return tdo
 }
 
