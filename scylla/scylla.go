@@ -2,23 +2,36 @@ package scylla
 
 import (
 	"errors"
+	"flag"
 	"fmt"
+	"log"
+	"os"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
 )
 
-type (
-	ScyllaManager struct {
-		hosts    []string
-		keyspace string
-	}
+var (
+	scyllaCluster  = os.Getenv("SCYLLA_DB_CLUSTER")
+	scyllaKeyspace = os.Getenv("SCYLLA_DB_KEYSPACE")
 
+	flagProto   = flag.Int("proto", 0, "protcol version")
+	flagCQL     = flag.String("cql", "3.0.0", "CQL version")
+	flagRF      = flag.Int("rf", 1, "replication factor for test keyspace")
+	flagRetry   = flag.Int("retries", 5, "number of times to retry queries")
+	flagTimeout = flag.Duration("gocql.timeout", 5*time.Second, "sets the connection `timeout` for all operations")
+)
+
+var initOnce sync.Once
+
+type (
 	ValidationError struct {
 		Name string // Field or edge name.
 		err  error
 	}
-
 	// NotFoundError returns when trying to update an
 	// entity, and it was not found in the database.
 	NotFoundError struct {
@@ -27,27 +40,80 @@ type (
 	}
 )
 
-func NewScyllaManager(hosts []string, keyspace string) *ScyllaManager {
-	return &ScyllaManager{hosts, keyspace}
+// CreateSession creates a new gocqlx session from flags.
+func CreateSession() *Session {
+	cluster := CreateCluster()
+	session := createSessionFromCluster(cluster)
+	return NewSession(session)
 }
 
-func (m *ScyllaManager) Connect() (gocqlx.Session, error) {
-	cluster := gocql.NewCluster(m.hosts...)
-	cluster.Keyspace = m.keyspace
+// CreateCluster creates gocql ClusterConfig from flags.
+func CreateCluster() *gocql.ClusterConfig {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+	clusterHosts := strings.Split(scyllaCluster, ",")
 
-	return gocqlx.WrapSession(cluster.CreateSession())
+	cluster := gocql.NewCluster(clusterHosts...)
+	cluster.ProtoVersion = *flagProto
+	cluster.CQLVersion = *flagCQL
+	cluster.Timeout = *flagTimeout
+	cluster.Consistency = gocql.Quorum
+	cluster.MaxWaitSchemaAgreement = 2 * time.Minute // travis might be slow
+	if *flagRetry > 0 {
+		cluster.RetryPolicy = &gocql.SimpleRetryPolicy{NumRetries: *flagRetry}
+	}
+
+	cluster.Compressor = &gocql.SnappyCompressor{}
+
+	return cluster
 }
 
-func (m *ScyllaManager) CreateKeyspace() error {
-	cluster := gocql.NewCluster(m.hosts...)
-	session, err := gocqlx.WrapSession(cluster.CreateSession())
+// CreateKeyspace creates keyspace with SimpleStrategy and RF derived from flags.
+func CreateKeyspace(cluster *gocql.ClusterConfig, keyspace string) error {
+	c := *cluster
+	c.Keyspace = "system"
+	c.Timeout = 30 * time.Second
+
+	session, err := gocqlx.WrapSession(c.CreateSession())
 	if err != nil {
 		return err
 	}
 	defer session.Close()
 
-	stmt := fmt.Sprintf(`CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}`, m.keyspace)
-	return session.ExecStmt(stmt)
+	{
+		err := session.ExecStmt(
+			fmt.Sprintf(`
+				CREATE KEYSPACE %s
+				WITH replication = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : %d}
+				AND durable_writes = true;
+			`, keyspace, *flagRF))
+		if err != nil {
+			return fmt.Errorf("create keyspace: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func createSessionFromCluster(cluster *gocql.ClusterConfig) gocqlx.Session {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+	// Drop and re-create the keyspace once. Different tests should use their own
+	// individual tables, but can assume that the table does not exist before.
+	initOnce.Do(func() {
+		if err := CreateKeyspace(cluster, scyllaKeyspace); err != nil {
+			log.Fatal(err)
+		}
+	})
+
+	cluster.Keyspace = scyllaKeyspace
+	session, err := gocqlx.WrapSession(cluster.CreateSession())
+	if err != nil {
+		log.Fatal("CreateSession:", err)
+	}
+	return session
 }
 
 // Error implements the error interface.

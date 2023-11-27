@@ -12,13 +12,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-const defaultGRPCAddr = ":8090"
-
 func MakeGRPCServerAndRun(listenAddr string, session *scylla.Session) error {
-	if listenAddr == "" {
-		listenAddr = defaultGRPCAddr
-	}
-
 	grpcTodoFetcher := NewGRPCTodoFetcherServer(session)
 
 	ln, err := net.Listen("tcp", listenAddr)

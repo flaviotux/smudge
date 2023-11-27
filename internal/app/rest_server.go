@@ -10,18 +10,17 @@ import (
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 )
 
-const defaultRestAddr = ":8080"
-
 type RESTAPIServer struct {
 	ListenAddr string
 	session    *scylla.Session
 }
 
-func (s *RESTAPIServer) Run() error {
-	if s.ListenAddr == "" {
-		s.ListenAddr = defaultRestAddr
-	}
+func MakeRESTAPIServerAndRun(listenAddr string, session *scylla.Session) error {
+	server := NewRESTAPIServer(listenAddr, session)
+	return server.Run()
+}
 
+func (s *RESTAPIServer) Run() error {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
