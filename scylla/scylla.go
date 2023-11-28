@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -24,8 +23,6 @@ var (
 	flagRetry   = flag.Int("retries", 5, "number of times to retry queries")
 	flagTimeout = flag.Duration("gocql.timeout", 5*time.Second, "sets the connection `timeout` for all operations")
 )
-
-var initOnce sync.Once
 
 type (
 	ValidationError struct {
@@ -100,13 +97,6 @@ func createSessionFromCluster(cluster *gocql.ClusterConfig) gocqlx.Session {
 	if !flag.Parsed() {
 		flag.Parse()
 	}
-	// Drop and re-create the keyspace once. Different tests should use their own
-	// individual tables, but can assume that the table does not exist before.
-	initOnce.Do(func() {
-		if err := CreateKeyspace(cluster, scyllaKeyspace); err != nil {
-			log.Fatal(err)
-		}
-	})
 
 	cluster.Keyspace = scyllaKeyspace
 	session, err := gocqlx.WrapSession(cluster.CreateSession())
