@@ -9,46 +9,42 @@ import (
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
 )
 
-func TestTodoQuery(t *testing.T) {
+func TestTodoUpdate(t *testing.T) {
 	session := gocqlxtest.CreateSession(t)
 	session.ExecStmt(todoSchemaUP)
 	defer session.ExecStmt(todoSchemaDown)
 
 	s := scylla.NewTodoSession(&session)
 
-	t.Run("only", func(t *testing.T) {
+	t.Run("simple", func(t *testing.T) {
 		if err := session.ExecStmt(todoCreateStmt); err != nil {
 			t.Fatal(err)
 		}
 
-		todo, err := s.
-			Query().
+		i, err := s.
+			Update().
 			Where(todo.ID("d763fe8a-6b5e-414c-a109-3b277f1d0a54")).
-			Only(context.Background())
+			SetText("text 2").
+			Save(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		if todo.ID != "d763fe8a-6b5e-414c-a109-3b277f1d0a54" {
+		if i < 0 {
 			t.Fail()
 		}
 	})
 
-	t.Run("all", func(t *testing.T) {
+	t.Run("not exists", func(t *testing.T) {
 		if err := session.ExecStmt(todoCreateStmt); err != nil {
 			t.Fatal(err)
 		}
 
-		todo, err := s.
-			Query().
-			Where(todo.ID("d763fe8a-6b5e-414c-a109-3b277f1d0a54")).
-			All(context.Background())
-		if err != nil {
+		err := s.
+			UpdateOneID("52b23152-0ec1-46d0-b239-b44b392a0485").
+			SetText("user 2").
+			Save(context.Background())
+		if err == nil {
 			t.Fatal(err)
-		}
-
-		if todo[0].ID != "d763fe8a-6b5e-414c-a109-3b277f1d0a54" {
-			t.Fail()
 		}
 	})
 }

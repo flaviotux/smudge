@@ -45,7 +45,7 @@ type UserDeleteOne struct {
 	ud *UserDelete
 }
 
-// Where appends a list predicates to the CarDelete builder.
+// Where appends a list predicates to the UserDelete builder.
 func (udo *UserDeleteOne) Where(ps ...qb.Cmp) *UserDeleteOne {
 	udo.ud.Where(ps...)
 	return udo

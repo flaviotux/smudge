@@ -31,6 +31,11 @@ func (uc *UserCreate) Save(ctx context.Context) (*model.User, error) {
 	return uc.cqlSave(ctx)
 }
 
+func (uc *UserCreate) Exec(ctx context.Context) error {
+	_, err := uc.Save(ctx)
+	return err
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Name(); !ok {

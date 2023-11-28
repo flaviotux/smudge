@@ -44,6 +44,25 @@ func (s *TodoSession) Create() *TodoCreate {
 	return &TodoCreate{builder, mutation, s.session}
 }
 
+// Update returns a builder for updating a User entity.
+func (s *TodoSession) Update() *TodoUpdate {
+	mutation := newTodoMutation()
+	builder := newTodoUpdateBuilder()
+	return &TodoUpdate{builder, mutation, s.session}
+}
+
+// UpdateOne returns a builder for deleting the given entity.
+func (s *TodoSession) UpdateOne(user *model.User) *TodoUpdateOne {
+	return s.UpdateOneID(user.ID)
+}
+
+// UpdateOneID returns a builder for deleting the given entity by its id.
+func (s *TodoSession) UpdateOneID(id string) *TodoUpdateOne {
+	builder := s.Update().Where(user.ID(id))
+	builder.mutation.id = &id
+	return &TodoUpdateOne{builder}
+}
+
 // Query returns a query builder for Todo.
 func (s *TodoSession) Query() *TodoQuery {
 	builder := newTodoSelectBuilder()
@@ -88,6 +107,25 @@ func (s *UserSession) Create() *UserCreate {
 	mutation := newUserMutation()
 	builder := newUserInsertBuilder()
 	return &UserCreate{builder, mutation, s.session}
+}
+
+// Update returns a builder for updating a User entity.
+func (s *UserSession) Update() *UserUpdate {
+	mutation := newUserMutation()
+	builder := newUserUpdateBuilder()
+	return &UserUpdate{builder, mutation, s.session}
+}
+
+// UpdateOne returns a builder for deleting the given entity.
+func (s *UserSession) UpdateOne(user *model.User) *UserUpdateOne {
+	return s.UpdateOneID(user.ID)
+}
+
+// UpdateOneID returns a builder for deleting the given entity by its id.
+func (s *UserSession) UpdateOneID(id string) *UserUpdateOne {
+	builder := s.Update().Where(user.ID(id))
+	builder.mutation.id = &id
+	return &UserUpdateOne{builder}
 }
 
 // Query returns a query builder for User.

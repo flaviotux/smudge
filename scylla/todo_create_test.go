@@ -13,8 +13,9 @@ func TestTodoCreate(t *testing.T) {
 	session.ExecStmt(todoSchemaUP)
 	defer session.ExecStmt(todoSchemaDown)
 
+	s := scylla.NewTodoSession(&session)
+
 	t.Run("simple", func(t *testing.T) {
-		s := scylla.NewTodoSession(&session)
 		_, err := s.
 			Create().
 			SetText("text").
@@ -27,7 +28,6 @@ func TestTodoCreate(t *testing.T) {
 	})
 
 	t.Run("check required fields", func(t *testing.T) {
-		s := scylla.NewTodoSession(&session)
 		_, err := s.
 			Create().
 			Save(context.Background())
