@@ -5,9 +5,9 @@ import (
 	"log"
 	"net"
 
-	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	"gitlab.luizalabs.com/luizalabs/smudge/proto"
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -39,9 +39,11 @@ func NewGRPCTodoFetcherServer(session *scylla.Session) *GRPCTodoFetcherServer {
 }
 
 func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoRequest) (*proto.TodoResponse, error) {
-	user := model.User{ID: in.UserID}
-
-	if _, err := s.session.User.Query().Only(ctx); err != nil {
+	usr, err := s.session.User.
+		Query().
+		Where(user.ID(in.UserID)).
+		Only(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -49,9 +51,8 @@ func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoReque
 		Create().
 		SetText(in.Text).
 		SetDone(false).
-		AddUser(&user).
+		AddUser(usr).
 		Save(ctx)
-
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +62,8 @@ func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoReque
 		Text: t.Text,
 		Done: t.Done,
 		User: &proto.User{
-			ID:   t.User.ID,
-			Name: t.User.Name,
+			ID:   usr.ID,
+			Name: usr.Name,
 		},
 	}, nil
 }

@@ -9,7 +9,7 @@ services:
   smudge:
     build: .
     container_name: smudge
-    develop: &develop
+    develop:
       watch:
         - action: rebuild
           path: .
@@ -20,10 +20,10 @@ services:
     environment:
       REST_LISTENADDR: ":3000"
       GRPC_LISTENADDR: ":4000"
-      SCYLLA_DB_HOSTS: "scylla"
+      SCYLLA_DB_CLUSTER: "scylla"
       SCYLLA_DB_KEYSPACE: "smudge"
     ports:
-      - "8080:3000"
+      - "3000:3000"
       - "4000:4000"
     links:
       - scylla

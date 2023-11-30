@@ -15,6 +15,6 @@ var (
 func main() {
 	session := scylla.CreateSession()
 
-	go app.MakeGRPCServerAndRun(listenaddrGRPC, session)
-	app.MakeRESTAPIServerAndRun(listenaddrRest, session)
+	go app.MakeRESTAPIServerAndRun(listenaddrRest, session)
+	app.MakeGRPCServerAndRun(listenaddrGRPC, session)
 }
