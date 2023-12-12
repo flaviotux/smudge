@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,27 +15,11 @@ import (
 )
 
 var (
-	scyllaCluster  = os.Getenv("SCYLLA_DB_CLUSTER")
-	scyllaKeyspace = os.Getenv("SCYLLA_DB_KEYSPACE")
-
-	flagProto   = flag.Int("proto", 0, "protcol version")
-	flagCQL     = flag.String("cql", "3.0.0", "CQL version")
-	flagRF      = flag.Int("rf", 1, "replication factor for test keyspace")
-	flagRetry   = flag.Int("retries", 5, "number of times to retry queries")
-	flagTimeout = flag.Duration("gocql.timeout", 5*time.Second, "sets the connection `timeout` for all operations")
-)
-
-type (
-	ValidationError struct {
-		Name string // Field or edge name.
-		err  error
-	}
-	// NotFoundError returns when trying to update an
-	// entity, and it was not found in the database.
-	NotFoundError struct {
-		table string
-		id    string
-	}
+	scyllaCluster           = os.Getenv("SCYLLA_DB_CLUSTER")
+	scyllaKeyspace          = os.Getenv("SCYLLA_DB_KEYSPACE")
+	scyllaRF, _             = strconv.Atoi(os.Getenv("SCYLLA_DB_KEYSPACE_REPLICATION_FACTOR"))
+	scyllaClusterTimeout, _ = strconv.Atoi(os.Getenv("SCYLLA_DB_CLUSTER_TIMEOUT"))
+	scyllaClusterRetry, _   = strconv.Atoi(os.Getenv("SCYLLA_DB_CLUSTER_RETRY"))
 )
 
 // CreateSession creates a new gocqlx session from flags.
@@ -52,13 +37,11 @@ func CreateCluster() *gocql.ClusterConfig {
 	clusterHosts := strings.Split(scyllaCluster, ",")
 
 	cluster := gocql.NewCluster(clusterHosts...)
-	cluster.ProtoVersion = *flagProto
-	cluster.CQLVersion = *flagCQL
-	cluster.Timeout = *flagTimeout
+	cluster.Timeout = time.Duration(scyllaClusterTimeout) * time.Second
 	cluster.Consistency = gocql.Quorum
-	cluster.MaxWaitSchemaAgreement = 2 * time.Minute // travis might be slow
-	if *flagRetry > 0 {
-		cluster.RetryPolicy = &gocql.SimpleRetryPolicy{NumRetries: *flagRetry}
+
+	if scyllaClusterRetry > 0 {
+		cluster.RetryPolicy = &gocql.SimpleRetryPolicy{NumRetries: scyllaClusterRetry}
 	}
 
 	cluster.Compressor = &gocql.SnappyCompressor{}
@@ -84,7 +67,7 @@ func CreateKeyspace(cluster *gocql.ClusterConfig, keyspace string) error {
 				CREATE KEYSPACE %s
 				WITH replication = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : %d}
 				AND durable_writes = true;
-			`, keyspace, *flagRF))
+			`, keyspace, scyllaRF))
 		if err != nil {
 			return fmt.Errorf("create keyspace: %w", err)
 		}
@@ -94,10 +77,6 @@ func CreateKeyspace(cluster *gocql.ClusterConfig, keyspace string) error {
 }
 
 func createSessionFromCluster(cluster *gocql.ClusterConfig) gocqlx.Session {
-	if !flag.Parsed() {
-		flag.Parse()
-	}
-
 	cluster.Keyspace = scyllaKeyspace
 	session, err := gocqlx.WrapSession(cluster.CreateSession())
 	if err != nil {
@@ -105,6 +84,13 @@ func createSessionFromCluster(cluster *gocql.ClusterConfig) gocqlx.Session {
 	}
 	return session
 }
+
+type (
+	ValidationError struct {
+		Name string // Field or edge name.
+		err  error
+	}
+)
 
 // Error implements the error interface.
 func (e *ValidationError) Error() string {
@@ -124,6 +110,15 @@ func IsValidationError(err error) bool {
 	var e *ValidationError
 	return errors.As(err, &e)
 }
+
+type (
+	// NotFoundError returns when trying to update an
+	// entity, and it was not found in the database.
+	NotFoundError struct {
+		table string
+		id    string
+	}
+)
 
 func (e *NotFoundError) Error() string {
 	return fmt.Sprintf("record with id %v not found in table %s", e.id, e.table)
