@@ -5,7 +5,6 @@ go 1.21.4
 require (
 	github.com/99designs/gqlgen v0.17.40
 	github.com/gocql/gocql v1.6.0
-	github.com/scylladb/gocqlx v1.5.0
 	github.com/scylladb/gocqlx/v2 v2.8.0
 	github.com/vektah/gqlparser/v2 v2.5.10
 )
