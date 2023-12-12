@@ -35,7 +35,7 @@ func TestUserQuery(t *testing.T) {
 	})
 
 	t.Run("all", func(t *testing.T) {
-		if err := session.ExecStmt(todoCreateStmt); err != nil {
+		if err := session.ExecStmt(userCreateStmt); err != nil {
 			t.Fatal(err)
 		}
 

@@ -23,7 +23,10 @@ func TestTodoUpdate(t *testing.T) {
 
 		i, err := s.
 			Update().
-			Where(todo.ID("d763fe8a-6b5e-414c-a109-3b277f1d0a54")).
+			Where(
+				todo.ID("d763fe8a-6b5e-414c-a109-3b277f1d0a54"),
+				todo.UserID("52b23152-0ec1-46d0-b239-b44b392a0485"),
+			).
 			SetText("text 2").
 			Save(context.Background())
 		if err != nil {

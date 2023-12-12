@@ -11,15 +11,16 @@ import (
 
 var todoSchemaUP = `
 CREATE TABLE IF NOT EXISTS gocqlx_test.todos (
-  id UUID PRIMARY KEY,
+  id UUID,
   text TEXT,
   done BOOLEAN,
   user_id UUID,
+	PRIMARY KEY (id, user_id)
 ) WITH compaction = { 'class' : 'LeveledCompactionStrategy' };
 `
 
 var todoSchemaDown = `
-DROP TABLE IF NOT EXISTS gocqlx_test.todos;
+DROP TABLE IF EXISTS gocqlx_test.todos;
 `
 
 var todoCreateStmt = `
@@ -31,7 +32,7 @@ INSERT INTO todos (
 ) VALUES (
 	d763fe8a-6b5e-414c-a109-3b277f1d0a54,
 	'text',
-	true,
+	false,
 	52b23152-0ec1-46d0-b239-b44b392a0485
 )
 `
