@@ -94,7 +94,7 @@ func (s *TodoSession) DeleteOne(todo *model.Todo) *TodoDeleteOne {
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
 func (s *TodoSession) DeleteOneID(id string) *TodoDeleteOne {
-	builder := s.Delete().Where(todo.ID(id))
+	builder := s.Delete().Where(todo.IDEQ(id))
 	builder.mutation.id = &id
 	return &TodoDeleteOne{builder}
 }

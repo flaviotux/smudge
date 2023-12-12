@@ -51,7 +51,7 @@ func TestTodoDelete(t *testing.T) {
 
 		i, err := s.
 			Delete().
-			Where(todo.ID("d763fe8a-6b5e-414c-a109-3b277f1d0a54")).
+			Where(todo.IDEQ("d763fe8a-6b5e-414c-a109-3b277f1d0a54")).
 			Exec(context.Background())
 		if err != nil {
 			t.Fatal(err)

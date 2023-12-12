@@ -1,7 +1,5 @@
 package todo
 
-import "github.com/scylladb/gocqlx/v2/table"
-
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "todo"
@@ -44,13 +42,4 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultDone holds the default value on creation for the "done" field.
 	DefaultDone bool
-)
-
-var (
-	Table = table.New(table.Metadata{
-		Name:    Name,
-		Columns: Columns,
-		PartKey: PartKey,
-		SortKey: SortKey,
-	})
 )
