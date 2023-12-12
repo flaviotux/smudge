@@ -19,7 +19,7 @@ type TodoCreate struct {
 }
 
 func newTodoInsertBuilder() *qb.InsertBuilder {
-	return qb.Insert(todo.Table).Columns(todo.Columns...)
+	return qb.Insert(todo.Name).Columns(todo.Columns...)
 }
 
 // SetText sets the "text" field.

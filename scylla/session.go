@@ -64,14 +64,20 @@ func (s *TodoSession) UpdateOneID(id string) *TodoUpdateOne {
 }
 
 // Query returns a query builder for Todo.
-func (s *TodoSession) Query() *TodoQuery {
+func (s *TodoSession) Query(todo *model.Todo) *TodoQuery {
 	builder := newTodoSelectBuilder()
-	return &TodoQuery{builder, s.session}
+	mutation := &TodoMutation{
+		id:      &todo.ID,
+		text:    &todo.Text,
+		done:    &todo.Done,
+		user_id: &todo.UserID,
+	}
+	return &TodoQuery{builder, mutation, s.session}
 }
 
 // Get returns a Todo entity by its id.
 func (s *TodoSession) Get(ctx context.Context, id string) (*model.Todo, error) {
-	return s.Query().Where(todo.ID(id)).Only(ctx)
+	return s.Query(&model.Todo{ID: id}).Only(ctx)
 }
 
 // Delete returns a delete builder for Todo.

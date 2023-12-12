@@ -1,5 +1,7 @@
 package todo
 
+import "github.com/scylladb/gocqlx/v2/table"
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "todo"
@@ -11,8 +13,8 @@ const (
 	FieldDone = "done"
 	// FieldDone holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// Table holds the table name of the todo in the database.
-	Table = "todos"
+	// Name holds the table name of the todo in the database.
+	Name = "todos"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -25,8 +27,8 @@ var Columns = []string{
 
 var (
 	// PartKey and SortKey are the table columns denoting the primary key
-	PartKey = []string{}
-	SortKey = []string{"id", "user_id"}
+	PartKey = []string{"id", "user_id"}
+	SortKey = []string{"done"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -42,4 +44,13 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultDone holds the default value on creation for the "done" field.
 	DefaultDone bool
+)
+
+var (
+	Table = table.New(table.Metadata{
+		Name:    Name,
+		Columns: Columns,
+		PartKey: PartKey,
+		SortKey: SortKey,
+	})
 )

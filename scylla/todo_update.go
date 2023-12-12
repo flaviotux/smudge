@@ -16,7 +16,7 @@ type TodoUpdate struct {
 }
 
 func newTodoUpdateBuilder() *qb.UpdateBuilder {
-	return qb.Update(todo.Table)
+	return qb.Update(todo.Name)
 }
 
 // SetText sets the "text" field.

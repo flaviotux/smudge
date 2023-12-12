@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
 	"gitlab.luizalabs.com/luizalabs/smudge/proto"
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
@@ -70,7 +71,7 @@ func (s *GRPCTodoFetcherServer) NewTodo(ctx context.Context, in *proto.TodoReque
 
 func (s *GRPCTodoFetcherServer) GetTodo(ctx context.Context, in *proto.TodoRequest) (*proto.TodosResponse, error) {
 	var tr = make([]*proto.TodoResponse, 0)
-	todos, err := s.session.Todo.Query().All(ctx)
+	todos, err := s.session.Todo.Query(&model.Todo{}).All(ctx)
 	if err != nil {
 		return nil, err
 	}

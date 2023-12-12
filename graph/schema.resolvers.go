@@ -36,7 +36,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.session.Todo.Query().All(ctx)
+	return r.session.Todo.Query(&model.Todo{}).All(ctx)
 }
 
 // Users is the resolver for the users field.

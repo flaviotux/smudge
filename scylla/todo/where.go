@@ -103,3 +103,43 @@ func DoneEQ(v string) qb.Cmp {
 func DoneNEQ(v string) qb.Cmp {
 	return qb.NeLit(FieldDone, v)
 }
+
+// UserID filters vertices based on their UserID field.
+func UserID(id string) qb.Cmp {
+	return qb.EqLit(FieldUserID, id)
+}
+
+// UserIDEQ applies the EQ predicate on the UserID field.
+func UserIDEQ(id string) qb.Cmp {
+	return qb.EqLit(FieldUserID, id)
+}
+
+// UserIDNEQ applies the NEQ predicate on the UserID field.
+func UserIDNEQ(id string) qb.Cmp {
+	return qb.NeLit(FieldUserID, id)
+}
+
+// UserIDIn applies the In predicate on the UserID field.
+func UserIDIn(id string) qb.Cmp {
+	return qb.InLit(FieldUserID, id)
+}
+
+// UserIDGT applies the GT predicate on the UserID field.
+func UserIDGT(id string) qb.Cmp {
+	return qb.GtLit(FieldUserID, id)
+}
+
+// UserIDGTE applies the GTE predicate on the UserID field.
+func UserIDGTE(id string) qb.Cmp {
+	return qb.GtOrEqLit(FieldUserID, id)
+}
+
+// UserIDLT applies the LT predicate on the UserID field.
+func UserIDLT(id string) qb.Cmp {
+	return qb.LtLit(FieldUserID, id)
+}
+
+// UserIDLTE applies the LTE predicate on the UserID field.
+func UserIDLTE(id string) qb.Cmp {
+	return qb.LtOrEqLit(FieldUserID, id)
+}

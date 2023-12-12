@@ -15,7 +15,7 @@ type TodoDelete struct {
 }
 
 func newTodoDeleteBuilder() *qb.DeleteBuilder {
-	return qb.Delete(todo.Table)
+	return qb.Delete(todo.Name)
 }
 
 // Where appends a list comparators to the TodoDelete builder.
