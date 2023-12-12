@@ -16,7 +16,7 @@ type UserUpdate struct {
 }
 
 func newUserUpdateBuilder() *qb.UpdateBuilder {
-	return qb.Update(user.Table)
+	return qb.Update(user.Name)
 }
 
 // SetName sets the "name" field.

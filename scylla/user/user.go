@@ -8,7 +8,7 @@ const (
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// Table holds the table name of the user in the database.
-	Table = "users"
+	Name = "users"
 )
 
 // Columns holds all SQL columns for user fields.

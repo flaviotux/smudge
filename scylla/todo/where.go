@@ -4,11 +4,6 @@ import (
 	"github.com/scylladb/gocqlx/v2/qb"
 )
 
-// ID filters vertices based on their ID field.
-func ID(id string) qb.Cmp {
-	return qb.EqLit(FieldID, id)
-}
-
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id string) qb.Cmp {
 	return qb.EqLit(FieldID, id)
@@ -42,11 +37,6 @@ func IDLT(id string) qb.Cmp {
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id string) qb.Cmp {
 	return qb.LtOrEqLit(FieldID, id)
-}
-
-// Text applies equality check predicate on the "text" field. It's identical to TextEQ.
-func Text(v string) qb.Cmp {
-	return qb.EqLit(FieldText, v)
 }
 
 // TextEQ applies the EQ predicate on the "text" field.
@@ -89,11 +79,6 @@ func TextContains(v string) qb.Cmp {
 	return qb.ContainsLit(FieldText, v)
 }
 
-// Done applies equality check predicate on the "done" field. It's identical to DoneEQ.
-func Done(v string) qb.Cmp {
-	return qb.EqLit(FieldDone, v)
-}
-
 // DoneEQ applies the EQ predicate on the "done" field.
 func DoneEQ(v string) qb.Cmp {
 	return qb.EqLit(FieldDone, v)
@@ -102,11 +87,6 @@ func DoneEQ(v string) qb.Cmp {
 // DoneNEQ applies the NEQ predicate on the "done" field.
 func DoneNEQ(v string) qb.Cmp {
 	return qb.NeLit(FieldDone, v)
-}
-
-// UserID filters vertices based on their UserID field.
-func UserID(id string) qb.Cmp {
-	return qb.EqLit(FieldUserID, id)
 }
 
 // UserIDEQ applies the EQ predicate on the UserID field.

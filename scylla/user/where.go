@@ -44,11 +44,6 @@ func IDLTE(id string) qb.Cmp {
 	return qb.LtOrEqLit(FieldID, id)
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) qb.Cmp {
-	return qb.EqLit(FieldName, v)
-}
-
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) qb.Cmp {
 	return qb.EqLit(FieldName, v)

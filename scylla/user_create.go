@@ -19,7 +19,7 @@ type UserCreate struct {
 }
 
 func newUserInsertBuilder() *qb.InsertBuilder {
-	return qb.Insert(user.Table).Columns(user.Columns...)
+	return qb.Insert(user.Name).Columns(user.Columns...)
 }
 
 func (uc *UserCreate) SetName(s string) *UserCreate {

@@ -15,7 +15,7 @@ type UserQuery struct {
 }
 
 func newUserSelectBuilder() *qb.SelectBuilder {
-	return qb.Select(user.Table)
+	return user.Table.SelectBuilder()
 }
 
 func (uq *UserQuery) Columns(columns ...string) *UserQuery {

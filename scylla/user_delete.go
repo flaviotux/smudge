@@ -15,7 +15,7 @@ type UserDelete struct {
 }
 
 func newUserDeleteBuilder() *qb.DeleteBuilder {
-	return qb.Delete(user.Table)
+	return qb.Delete(user.Name)
 }
 
 // Where appends a list comparators to the UserDelete builder.
