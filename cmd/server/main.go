@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"gitlab.luizalabs.com/luizalabs/smudge/internal/grpc"
-	"gitlab.luizalabs.com/luizalabs/smudge/internal/rest"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/json"
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 )
 
@@ -16,6 +16,6 @@ var (
 func main() {
 	session := scylla.CreateSession()
 
-	go rest.MakeRESTAPIServerAndRun(listenaddrRest, session)
+	go json.MakeJSONAPIServerAndRun(listenaddrRest, session)
 	grpc.MakeGRPCServerAndRun(listenaddrGRPC, session)
 }

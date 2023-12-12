@@ -1,4 +1,4 @@
-package rest
+package json
 
 import (
 	"log"
@@ -10,17 +10,17 @@ import (
 	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
 )
 
-type RESTAPIServer struct {
+type JSONAPIServer struct {
 	ListenAddr string
 	session    *scylla.Session
 }
 
-func MakeRESTAPIServerAndRun(listenAddr string, session *scylla.Session) error {
-	server := NewRESTAPIServer(listenAddr, session)
+func MakeJSONAPIServerAndRun(listenAddr string, session *scylla.Session) error {
+	server := NewJSONAPIServer(listenAddr, session)
 	return server.Run()
 }
 
-func (s *RESTAPIServer) Run() error {
+func (s *JSONAPIServer) Run() error {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
@@ -29,10 +29,10 @@ func (s *RESTAPIServer) Run() error {
 		r.Get("/", handlers.HandleGraphQLPlayground())
 	})
 
-	log.Printf("Serving REST API on 0.0.0.0%s\n", s.ListenAddr)
+	log.Printf("Serving JSON API on 0.0.0.0%s\n", s.ListenAddr)
 	return http.ListenAndServe(s.ListenAddr, r)
 }
 
-func NewRESTAPIServer(listenAddr string, session *scylla.Session) *RESTAPIServer {
-	return &RESTAPIServer{listenAddr, session}
+func NewJSONAPIServer(listenAddr string, session *scylla.Session) *JSONAPIServer {
+	return &JSONAPIServer{listenAddr, session}
 }
