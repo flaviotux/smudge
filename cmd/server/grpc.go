@@ -1,4 +1,4 @@
-package grpc
+package main
 
 import (
 	"context"
@@ -6,15 +6,15 @@ import (
 	"net"
 
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla/user"
 	"gitlab.luizalabs.com/luizalabs/smudge/proto"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-func MakeGRPCServerAndRun(listenAddr string, session *scylla.Session) error {
-	grpcTodoFetcher := NewGRPCTodoFetcherServer(session)
+func makeGRPCServerAndRun(listenAddr string, session *scylla.Session) error {
+	grpcTodoFetcher := newGRPCTodoFetcherServer(session)
 
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
@@ -35,7 +35,7 @@ type GRPCTodoFetcherServer struct {
 	session *scylla.Session
 }
 
-func NewGRPCTodoFetcherServer(session *scylla.Session) *GRPCTodoFetcherServer {
+func newGRPCTodoFetcherServer(session *scylla.Session) *GRPCTodoFetcherServer {
 	return &GRPCTodoFetcherServer{session: session}
 }
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla/todo"
 )
 
 type TodoDelete struct {

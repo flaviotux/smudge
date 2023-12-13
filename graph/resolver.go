@@ -4,7 +4,7 @@ package graph
 
 import (
 	"github.com/99designs/gqlgen/graphql"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
 )
 
 // This file will not be regenerated automatically.

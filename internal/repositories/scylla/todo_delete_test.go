@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/scylladb/gocqlx/v2/gocqlxtest"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla/todo"
 )
 
 var todoSchemaUP = `

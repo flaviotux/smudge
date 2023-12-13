@@ -5,8 +5,8 @@ import (
 
 	"github.com/scylladb/gocqlx/v2"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla/todo"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla/todo"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla/user"
 )
 
 type Session struct {

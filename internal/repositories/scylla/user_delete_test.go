@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	"github.com/scylladb/gocqlx/v2/gocqlxtest"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla/user"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla/user"
 )
 
-func TestUserUpdate(t *testing.T) {
+func TestUserDelete(t *testing.T) {
 	session := gocqlxtest.CreateSession(t)
 	session.ExecStmt(userSchemaUP)
 	defer session.ExecStmt(userSchemaDown)
@@ -22,14 +22,13 @@ func TestUserUpdate(t *testing.T) {
 		}
 
 		i, err := s.
-			Update().
-			Where(user.ID("52b23152-0ec1-46d0-b239-b44b392a0485")).
-			SetName("user 2").
-			Save(context.Background())
+			Delete().
+			Where(user.ID("d763fe8a-6b5e-414c-a109-3b277f1d0a54")).
+			Exec(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
-		if i < 0 {
+		if i > 1 {
 			t.Fail()
 		}
 	})
@@ -40,9 +39,8 @@ func TestUserUpdate(t *testing.T) {
 		}
 
 		err := s.
-			UpdateOneID("d763fe8a-6b5e-414c-a109-3b277f1d0a54").
-			SetName("user 2").
-			Save(context.Background())
+			DeleteOneID("52b23152-0ec1-46d0-b239-b44b392a0485").
+			Exec(context.Background())
 		if err == nil {
 			t.Fatal(err)
 		}

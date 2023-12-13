@@ -6,7 +6,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
 )
 
 func HandleGraphQL(session *scylla.Session) http.HandlerFunc {

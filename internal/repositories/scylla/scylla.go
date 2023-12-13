@@ -1,8 +1,6 @@
 package scylla
 
 import (
-	"errors"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -24,17 +22,14 @@ var (
 
 // CreateSession creates a new gocqlx session from flags.
 func CreateSession() *Session {
-	cluster := CreateCluster()
-	session := createSessionFromCluster(cluster)
+	cluster := CreateCluster(scyllaCluster)
+	session := CreateSessionFromCluster(cluster)
 	return NewSession(session)
 }
 
 // CreateCluster creates gocql ClusterConfig from flags.
-func CreateCluster() *gocql.ClusterConfig {
-	if !flag.Parsed() {
-		flag.Parse()
-	}
-	clusterHosts := strings.Split(scyllaCluster, ",")
+func CreateCluster(clusters string) *gocql.ClusterConfig {
+	clusterHosts := strings.Split(clusters, ",")
 
 	cluster := gocql.NewCluster(clusterHosts...)
 	cluster.Timeout = time.Duration(scyllaClusterTimeout) * time.Second
@@ -55,11 +50,7 @@ func CreateKeyspace(cluster *gocql.ClusterConfig, keyspace string) error {
 	c.Keyspace = "system"
 	c.Timeout = 30 * time.Second
 
-	session, err := gocqlx.WrapSession(c.CreateSession())
-	if err != nil {
-		return err
-	}
-	defer session.Close()
+	session := CreateSessionFromCluster(&c)
 
 	{
 		err := session.ExecStmt(
@@ -76,50 +67,12 @@ func CreateKeyspace(cluster *gocql.ClusterConfig, keyspace string) error {
 	return nil
 }
 
-func createSessionFromCluster(cluster *gocql.ClusterConfig) gocqlx.Session {
+func CreateSessionFromCluster(cluster *gocql.ClusterConfig) gocqlx.Session {
 	cluster.Keyspace = scyllaKeyspace
 	session, err := gocqlx.WrapSession(cluster.CreateSession())
 	if err != nil {
 		log.Fatal("CreateSession:", err)
 	}
+	defer session.Close()
 	return session
-}
-
-type (
-	ValidationError struct {
-		Name string // Field or edge name.
-		err  error
-	}
-)
-
-// Error implements the error interface.
-func (e *ValidationError) Error() string {
-	return e.err.Error()
-}
-
-// Unwrap implements the errors.Wrapper interface.
-func (e *ValidationError) Unwrap() error {
-	return e.err
-}
-
-// IsValidationError returns a boolean indicating whether the error is a validation error.
-func IsValidationError(err error) bool {
-	if err == nil {
-		return false
-	}
-	var e *ValidationError
-	return errors.As(err, &e)
-}
-
-type (
-	// NotFoundError returns when trying to update an
-	// entity, and it was not found in the database.
-	NotFoundError struct {
-		table string
-		id    string
-	}
-)
-
-func (e *NotFoundError) Error() string {
-	return fmt.Sprintf("record with id %v not found in table %s", e.id, e.table)
 }

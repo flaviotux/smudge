@@ -6,7 +6,7 @@ import (
 
 	"github.com/scylladb/gocqlx/v2/gocqlxtest"
 	"gitlab.luizalabs.com/luizalabs/smudge/graph/model"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
 )
 
 func TestTodoQuery(t *testing.T) {

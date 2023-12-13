@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gocql/gocql"
-	"gitlab.luizalabs.com/luizalabs/smudge/scylla"
+	"gitlab.luizalabs.com/luizalabs/smudge/internal/repositories/scylla"
 )
 
 func TestTodoMutation(t *testing.T) {
